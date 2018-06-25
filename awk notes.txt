@@ -1,0 +1,236 @@
+AWK - tool that works best with text files
+-------------------------------------------
+3 dudes names.
+its like sed but more advanced
+
+-------------------------------------------
+Intro- basic
+
+printng the whole line: awk '{print $0}' names.txt
+printng 1st name and last name: awk '{print $1 $2}' names.txt
+printng last name and 1st name: awk '{print $2 $1}' names.txt
+but above names are concatonated
+
+printng 1st name and last name: awk '{print $1, $2}' names.txt
+comma puts a space delimiter
+
+printing 1st name and last name: awk '{print $1",     " $2}' names.txt
+comma puts a space delimiter and adding extra spaces
+
+counting columns in a text: awk '{print NF}' names.txt
+
+Different ways of using awk
+awk -f script names.txt
+provide awk srcipt with -f
+
+awk -v hi=hello {'print $1, hi'}
+-v allows substitution. what write into the command line we take 1st field and add Hello
+awk -F t {'print $2'}
+this looks for tab delimmited lines in the command line
+
+awk '{print NF, $0}' dukeofyork.txt names.txt
+Give multiple file inputs and runs one file 1st then next
+uptime | awk '{print $4}'
+awk '{print NF, $0}' < dukeofyork.txt
+uptime | awk '{print $4} > store.txt
+
+awk '{print NF, $0}' dukeofyork.txt | sort -n
+direct awk output to sort program
+uptime| awk '{print NF, $0}'
+
+Specifying field and record separators in a program
+----------------------------------------------------
+
+awk -F ; -f script names.txt
+-F lets us to specify the delimitter
+awk -F ABC names.txt
+delimiter is ABC
+awk -F '[,!]' '{print $2}'
+here the delimitter can be a '!' or a ','
+
+awk 'BEGIN{FS=","} {print $2}'
+Here we set field seperator to ',' before the input from command line is considered
+
+awk 'BEGIN{RS="!";FS=","} {print $2}' onebigline.txt
+in awk each line is considered as a record by default
+but some files have a character to define the end of the line/ start of the next record
+
+awk 'BEGIN{RS="";FS="\n"} {name=$1;address=$2;citystatezip=$3; print name "," address "," citystatezip}' multiaddress.txt
+bring all the multi lined record to a single lined record delimitted by ','
+
+awk 'BEGIN{OFS=", ";ORS="!"} {print name $2, $1}' names.txt
+OFS -  output field seperator
+ORS - output record seperator
+
+awk -F , '{print $1 "\t" $2 "\t" $3}' nameemailavg.csv 
+awk 'BEGIN{FS=",";OFS="\t"} {print $1,$2,$3}' nameemailavg.csv 
+both have the same output , tab seperated output instead of a ',' serated as in file
+
+wokring with variables
+-------------------------------------------
+awk '{print NF, $0}' dukeofyork.txt
+prints number of fields
+awk '{print NR, $0}' dukeofyork.txt
+prints number of records
+
+we can also write this below and vice a versa
+awk 'NF==6{print NR, $0}' dukeofyork.txt
+prints those records and record number which has fields=6
+
+awk 'NR==6{print NF, $0}' dukeofyork.txt
+prints the record=6 and number of fields
+
+ADDITIONAL variables
+awk '{print NR, FILENAME, FNR, $0}' dukeofyork.txt
+FILENAME - print file name
+FNR- record number in file
+
+Playing with variables
+awk '{print $(NF)}' dukeofyork.txt
+print last field in each record
+awk '{print $(NF-1)}' dukeofyork.txt
+print second last field in each record
+
+awk '{$2="TWO",print}' dukeofyork.txt
+replace second field with "TWO" in all records
+
+some numberic operations with awk
+-----------------------------------------
+awk '{a=1,b=5,print a+b}'
+gives a+b=6
+
+NOTE: numeric value of strings is 0
+awk '{a=1,b="test",print a+b}'
+gives a+b=1
+
+awk '{a=1,b=5,print a b}'
+just concatonates a and b = 15
+
+awk '{a=1,b=5,c=2,print a b*c}'
+Which is first? b*c then concatonates with a
+
+awk '{a=1,b=5,c=2,print (a b)*c}'
+Now a b is concatonated first and then mutiplied with c
+
+NOTE: how awk behaves
+awk '{print "\"" $1 "\" + 1= " $1 +1 }'
+123
+"123" + 1= 124
+12.4
+"12.4" + 1= 13.4
+10e3
+"10e3" + 1= 10001
+123AB
+"123AB" + 1= 124
+AB123
+"AB123" + 1= 1
+00123
+"00123" + 1= 124
+
+Working with operators and arrays
+-----------------------------------------------
+operators same as c++
+
+regular expression
+
+arrays
+
+Regular Expressions
+----------------------------------------------------
+case sensitive matching
+/abc/ - "abc" "xxxabc" "abcxxx" "xxxxabcXXXX"
+/a.c/ - "." represents any symbol or character and cannot be "ac"
+/a\.c/ - literally "a.c"
+/a\\c/ - literally "a\c"
+/a\/c/ - literally "a/c"
+
+awk '/up/{print "UP:" $0} /down/{print "DOWN:" $0}' dukeofyork.txt
+matches all the lines with words up, down and prints the same in caps ahead of each line
+
+use '~' regular expression matching and if true print
+and '~!' to print if regualar expression false
+awk '$4 ~ /up/{print $0}' dukeofyork.txt
+prints those lines whose 4TH field is 'up' and prints the whole line
+
+'^' at the begining of an expression means the matching expression should START with
+'$' at the end of an expression means the matching expression should END with
+
+awk '$3 ~ /^the/{print $0}' dukeofyork.txt
+print line if the 3RD field starts with "the"
+
+Character class []
+/a[xyz]c/ - matches "axc" "ayc" "azc"
+/a[a-z]c/ - middle character can be any alphabet
+/a[^a-v]c/ - the "^" means match that is not given in the character class [a-v]
+/a[a-zA-Z]c/ - the middle alhphatbet can be any alphabet in upper or lower case 
+
+'+' matches or more repeats
+/ab+c/ - "abc" "abbbbc" but not "ac"
+'?' matches 0 or 1 repeats
+/ab?c/ - "ac" "abc" but not "abbbbc"
+Use {} to specify the repeats
+/ab{3}c/ - "abbbc" exactly 3 b's
+/ab{3,}c/ - b's can be repeated 3 or more times
+/ab{3,5}c/ - b's can be repeated 3 times and ATMOST 5 times.
+
+matching is greedy when use regular expression
+/<.+>/ - can end up matching the entire HTML code. ie match the last '>' of the HTML code
+/<[^>]+>/ - can match something specific like '<i>' '<h>' '<body>'
+
+Control structures in awk
+----------------------------------------------
+like the ones in c language
+NOTE:   you can put if statements/ for loops awk programs in a file an run using -f flag
+	you can run awk program through shell (set the execute bits)
+
+if statement
+awk '{ if(NF<8) {print "Shortline("NF"):" $0} else{ print "LONGLINE("NF"):" $0}}' dukeofyork.txt
+
+for loop - firstthree.awk program to print first 3 fields in each line
+	{
+		for ( i=1; i<=3; i++ ) {
+			print "Line " NR ", field " i ": " $i;
+		}
+	}
+
+example of making html file using awk using scores.txt
+---------------------------------------------------------
+BEGIN {
+        FS="\t";
+        print "<table>";
+        print "<tr";
+        print "\t<th>Bowler</th>";
+        for(i=1;i<=8;i++){
+                print "\t<th>Round", i"</th>";
+        }
+        print "</tr>"
+}
+{
+        print "<tr>";
+        print "\t<td><b>" $1 "</b></td>";
+        for (i=2; i<=8;i++){
+                print "\t<td>" $i "</td>";
+                total[i] += $i;
+        }
+        print "</tr>"
+}
+
+END{
+        print "<tr>"
+        print "\t<td><b><i>Average</i></b></td>";
+        for (i=2; i<=8;i++){
+                print "\t<td><i>" int(total[i]/NR) "</i></td>";
+        }
+        print "</tr>"
+        print "</table>"
+}
+
+printF()  - advanced ouptut formatting
+-----------------------------------------------------------
+printf("%s \t %s \t %d \n",$1,$2,$3)
+%s - s=string
+%d - d=decimal
+
+printf("%-20s %30s %10d\n",$1,$2,$3)	
+20,30,10 are the width for wach field 
+the negative -20 means left justified

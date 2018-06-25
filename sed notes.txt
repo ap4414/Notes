@@ -1,0 +1,198 @@
+SED linux command line tool. ( stream editor)
+--------------------------------------
+s command.
+use single and double quotes for sed
+'g' modifier - making it global
+use '# to add comments in sed script
+
+regular expressions
+-----------------------------------
+use . to include any character
+Use back slash in case commandline sensitive charaters are used
+^- use ^abc , matches first characters abc of the line 
+$- use abc$ matches with the characters abc at the end of the line
+use [ ] to include a number of possible characters to match
+use [a-z] to match a range of characters
+use [a-zA-Z] to match upper case and lower case
+IMP: [^a-z] matches anything that not lowercase
+
+use * to match repetative characters. ab*c=abc-abbbc=abbbbbbbc
+use ab to pair characters then (ab)*c=abc=ababc=abababc
+
+use & to replace with inself. s/the/(&)/g encases all 'the' as '(the)  
+
+'\( \)' is used to select the search string.
+'s/\(they\) \(were\)/\2 \1/g' = 'they were' becomes 
+were they'
+
+Sed command line flags
+-------------------------------------
+Controlling printing with -n and the "p" modifier
+you can use "p" and "g" together
+Use -e flag to include multiple commands
+-e flag takes one line and applies all sed commands one after the other
+sed -e 's/down/DOWN/g' -e 's/up/UP/g' dukeofyork.txt
+In -e the next sed command is working on the output line of the previous sed cmd.
+someties  semicolon can be used to cascade sed cmds insead of -e
+Use -f to read from a sed script
+
+More SED commands
+------------------------
+specifying address in sed cmds (lines or range of lines)
+
+p command - print 
+sed -n 3p dukeofyork.txt
+sed -n '$p' dukeofyork.txt
+sed -n '1p' dukeofyork.txt 
+sed -n '2,4p' dukeofyork.txt   or    sed -n '2,4 p' dukeofyork.txt
+just like above '!' is a not. not 2 through 4
+sed -n '2,4!p' dukeofyork.txt 
+Here both file are joined. so arrray starts from 9th line :
+sed -n '2,4 p' dukeofyork.txt array.c
+sed -n '/down/p' dukeofyork.txt 
+sed -n '/[Tt]he[my]/p' dukeofyork.txt 
+backslach rules still exists
+looking for 'and/or' - sed -n '/and\/or/p' dukeofyork.txt
+pritnting lines between a pattern (will print till end if 2nd pattern not matched
+sed -n '/^}/,/^{/p' array.c
+
+d command -delete
+remember remove -n or no output
+deletes anything between pattern {} in array.c
+sed '/^{/,/^}/d' array.c
+
+r command - read
+read in contents of another file
+cannot be used with range. $-end of line , line number,pattern are allowed
+sed '/down/r array.c' dukeofyork.txt |less
+
+w command - writes the to the file immediately
+wrinting lines 1 to 3 in file top
+nl dukeofyork.txt|sed '1,3w top' 
+sed -n '/down/w down' dukeofyork.txt 
+IMP: w modifier to the s command
+sed 's/up/UP/gw up' dukeofyork.txt 
+writes every time up/down is found times = 
+sed -e 's/down/DOWN/gw' -e 's/up/UP/gw' dukeofyork.txt
+
+y command - correspondig characters are replaced
+Cannot do over a range
+sed 'y/abcdef/!@#$%^&/' dukeofyork.txt
+sed 'y/abcdef/ABCDEF/' dukeofyork.txt
+
+a- appneds line after specific character(one more entire lines at the same time)
+back slash is a must and should not have any space between \n and newline
+sed '/down/ a\==>new line' dukeofyork.txt
+
+i- insert lines (one more entire lines at the same time) like a command
+same line a but inserts lines before the specified lineline
+
+c- copies new lines(one more entire lines at the same time)
+overwrites on the lines where starting and ending sequences match
+
+random example: sed -n '/^[a-z]* main *(/,/^}/w main.c' array.c
+
+Writing programs in sed
+------------------------------------
+
+use {} to write bocks of commands executed in order
+usually we can write
+	sed -e 's/up/UP/g' -e 's/down/DOWN/g' dukeofyork.txt
+also write as script but for lines containing when
+	cat > script
+		/when/ s/up/UP/g 
+		/when s/down/DOWN/g
+	sed -f script dukeofyork.txt
+also write with {}
+	cat > script
+		/when/ {
+			s/up/UP/g
+			s/down/DOWN/g
+		}
+	sed -f script dukeofyork.txt
+also write with nested {} but only between a range of lines + for lines NOT having 'when'
+	cat > script
+		3,6 {
+			/when/ ! {
+				s/up/UP/g
+				s/down/DOWN/g
+			}
+		}
+	sed -f script dukeofyork.txt
+
+n command - gets the next line. when you keep taking next lines they are no longer available for pattern matching
+	cat > script
+		/when/ {
+			n
+			s/^/((/
+			n
+			s/$/))/
+		}
+	sed -f script dukeofyork.txt
+
+q command - same as n but prints and then exits
+sed -n '1,/again/p' dukeofyork.txt
+or
+sed -n '/again/q' dukeofyork.txt
+
+best used in scripts
+	cat > script
+		/when/ {
+			n
+			s/^/((/
+			n
+			s/$/))/
+			q
+		}
+	sed -f script dukeofyork.txt
+
+d command - deletes current line and if it is in a script then stops execution to the same block and the blocks below
+best used in scripts - below all lines UPTILL the matched line is printed
+	cat > script
+		/up/ {
+			s/up/UP/
+			d
+			s/^/==/
+		}
+	sed -f script dukeofyork.txt
+
+debugging
+use '=' to find the line we are on
+	cat > script
+		/when/ {
+			n
+			=
+			s/^/((/
+			n
+			=
+			s/$/))/
+			=
+		}
+	sed -f script dukeofyork.txt
+
+Also lower case 'l'
+this will give a /t where the tab exists
+	cat > script
+		/up/ {
+			s/up/UP/
+			d
+			s/^/==/
+			l
+		}
+	sed -f script dukeofyork.txt
+
+Advanced programming
+---------------------------------------------
+The capital N command reads the next line from the input and appends it to the pattern space. 
+The capital P command prints the first line in the pattern space. And the capital D command deletes the first line in the pattern space.
+Like the lower case d command,
+capital D stops processing but it doesn't get the next line unless it leaves the pattern space empty. Now usually SED edits lines one at a time. Even a block that affects a range of lines affects each line in the range individually.
+
+The : command defines a label. 
+The b command branches to a defined label. 
+And the t command performs a conditional branch depending on whether or not any subsitutions have been made by the last s command. 
+
+The h command holds, or copies, the pattern space into the hold buffer. 
+The g command copies or gets the hold buffer into the pattern space. 
+The uppercase H and G commands append the pattern space to the hold buffer or vice versa, and the x command exchanges the pattern space and the hold buffer.
+ 

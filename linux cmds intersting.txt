@@ -1,0 +1,63 @@
+id - print real and effective User ID (UID) and Group ID (GID)
+top - Top displays a list of processes, system’s resource usage
+ps - lists running processes
+top -U [username]
+or
+ps -u [username]
+OR
+ps -ef | grep <username>
+OR
+ps -efl | grep <username>
+tree - 
+kill
+grep
+enice - changes the nice value of an
+already running process, A value of -19 is very high priority, while a value of 19 is very low priority
+
+Kernel
+---------------------
+coredumpctl- core dump
+cat /proc/cmdline to find the kernel path
+lsmod - list modules currenty loaded in kernel
+modprobe - install kernel module
+
+Linux Directory Structure Diagram
+-------------------------------------
+https://www.tecmint.com/linux-directory-structure-and-important-files-paths-explained/
+
+Server updown related
+---------------------
+last - server reboots
+who - who is logged in
+uptime
+
+HW related
+-----------------
+uname -a or -m or -r or -v or -n
+lspci - list PCI
+lscpu - list CPU, processors, sockets
+lshw - list all HW , disks
+or hwinfo
+lsusb - List usb buses and device details
+lsscsi - List scsi devices
+lsblk - List block devices
+df - disk space of file systems
+Fdisk - utility to modify partitions on hard drives, and can be used to list out the partition information as well.
+mount -to mount/unmount and view mounted file systems.
+free - Check RAM
+hdparm - information about sata devices like hard disks.
+
+dmesg - print or control the kernel ring buffer
+dmideode- tool for dumping a computer's DMI tables aka SMBIOStable contents in a human-readable
+
+network related
+-------------------------
+tcpdump
+ifconfig
+brctl
+route
+DiG
+traceroute
+Host
+ethtool
+netstat
