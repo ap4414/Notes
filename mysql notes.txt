@@ -1,0 +1,542 @@
+SHOW VARIABLES LIKE '%time_zone%';
+SELECT NOW();
+
+SET time_zone='US/EASTERN';
+SHOW VARIABLES LIKE '%time_zone%';
+SELECT NOW();
+
+---------------------------------------------------------------------------------------------------
+***** using world DB ******
+SELECT * FROM Country;
+SELECT count(*) FROM Country;
+
+-ORDER BY clause
+-Also used here is the LIMIT(how many that will be selected) and OFFSET(printing by adding an offset to the LIMIT)
+SELECT * FROM Country ORDER BY Name LIMIT 10;
+SELECT * FROM Country ORDER BY Name LIMIT 10 OFFSET 5;
+
+-AS clause
+not needed to specify AS all the time
+
+-ORDER BY clasuse
+SELECT Name AS Country, Code AS ISO, Region, Population AS POP FROM Country ORDER BY Code;
+SELECT Name Country, Code ISO, Region, Population POP FROM Country ORDER BY Code;
+SELECT Name Country, Code ISO, Region, Population POP FROM Country ORDER BY Code ASC; -- no need to mention ASC as it is default
+SELECT Name Country, Code ISO, Region, Population POP FROM Country ORDER BY Code DESC;
+SELECT Name Country, Code ISO, Region, Population POP FROM Country ORDER BY Continent,Name; -- to levels of sort
+SELECT Name Country, Code ISO, Region, Population POP FROM Country ORDER BY Continent DESC,Region,Name; --region and name is ordered by ASC
+
+-WHERE clause / OR Operator / AND Operator / IN operator
+SELECT Name, Continent, Code, Region, Population FROM Country WHERE Population<100000 ORDER BY Population DESC;
+SELECT Name, Continent, Code, Region, Population 
+	FROM Country 
+	WHERE Population<100000 OR Population IS NULL
+	ORDER BY Population DESC;
+SELECT Name, Continent, Code, Region, Population 
+	FROM Country 
+	WHERE Population<100000 AND Continent='Oceana'
+	ORDER BY Population DESC;
+SELECT Name, Continent, Code, Region, Population FROM Country WHERE Continent IN ('Europe', 'Asia') ORDER BY Name;
+	
+-LIKE operator
+'%' - wild card - matches 0 or more characters
+'_' - match any character but only one position
+SELECT Name, Continent, Code, Region, Population FROM Country WHERE Name LIKE '%islands%' ORDER BY Name;
+SELECT Name, Continent, Code, Region, Population FROM Country WHERE Name LIKE '_a%' ORDER BY Name; -- second character is 'a' followed by any number of characters
+
+-regular explression matching in mySQL is allowed 
+SELECT Name, Continent, Code, Region, Population 
+	FROM Country 
+	WHERE Name REGEXP '^.[a-e].*' --second character is 'a' to 'e', '^' means the starting of the line, '.' means any character, '.*' means 0 or any number of any characters
+	ORDER BY Name;
+SELECT Name, Continent, Code, Region, Population 
+	FROM Country 
+	WHERE Name REGEXP '.*g$' -- '$' end of line. here any name ending with character 'g'
+	ORDER BY Name;
+SELECT Name, Continent, Code, Region, Population 
+	FROM Country 
+	WHERE Name REGEXP 'oc+o' --matches the first occurence of character 'o' followed by 1 or more 'c' and then another character 'o' . eg. like Morocco
+	ORDER BY Name;
+SELECT Name, Continent, Code, Region, Population 
+	FROM Country 
+	WHERE Name REGEXP 'oc?o' --matches the first occurence of character 'o' followed by 0 or 1 'c' and then another character 'o' 
+	ORDER BY Name;
+SELECT Name, Continent, Code, Region, Population 
+	FROM Country 
+	WHERE Name REGEXP '[[:space:]]' --matches ' '/space anywhere in the line
+	ORDER BY Name;
+	
+NOTE :  [abcde] character class
+		[a-f] range
+
+
+-INSERT
+***** using scratch DB ******
+CREATE TABLE test (a INT, b TEXT, c TEXT);   --creating the table
+INSERT INTO test VALUES(1, 'This','Here!'); -- inserting values into ALL columns
+SELECT * FROM test;
+
+INSERT INTO test (b,c) VALUES('Changes','Heard!');  --inserting values into columns 'b' and 'c'
+SELECT * FROM test;
+
+INSERT INTO test ( a,b,c) SELECT id, name, description from item;
+SELECT * FROM test;
+
+-UPDATE
+UPDATE test SET c='Extra Funny.' where a=2;
+UPDATE test SET c= NULL where a=2;
+
+-DELETE
+DELETE FROM test WHERE a=2;
+
+-DROP
+DROP TABLE test;
+
+-Literals
+NOT data base standards
+SELECT 'hello' ', ' 'world'; -- only works in mySQL
+SELECT "hello, world"; -- only works in mySQL
+SELECT 'hello, \'world\'; --only in mySQL
+
+NOTE: safest option: Stick to standard strings to make it portable
+SELECT 'hello, world';
+SELECT 'hello, ''world'''; --to encompass world with ''
+SELECT 'hello, "world"'; --to encompass world with ''
+
+-NULL
+NULL is not value but the lack of a value, so '=' etc. will not work to test for NULL
+use:
+SELECT * FROM test Where a IS NOT NULL;
+SELECT * FROM test Where a IS NULL;
+
+
+-Databases -its is a directory in mySQL
+CREATE DATABASE foo;
+
+We can aso get specify in mySQL which database to use
+USE foo;
+CREATE TABLE foo ( a INT, b TEXT);
+INSERT INTO foo VALUES (1, 'foo');
+SELECT * FROM foo;
+
+DROP DATABASE foo;
+
+-Tables
+DROP TABLE IF EXISTS test; --will not give error if table does not exist
+
+CREATE TABLE test (
+    id INTEGER,
+    name VARCHAR(255),
+    address VARCHAR(255),
+    city VARCHAR(255),
+    state CHAR(2),
+    zip CHAR(10)
+);
+
+DESCRIBE test;  ---mySQL specific
+SHOW TABLE STATUS;
+SHOW TABLE STATUS LIKE 'test';
+
+SHOW CREATE TABLE test;
+
+CREATE TABLE test (
+    id INTEGER,
+    name VARCHAR(255),
+    address VARCHAR(255),
+    city VARCHAR(255),
+    state CHAR(2),
+    zip CHAR(10)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+
+-Relational details
+mySQL uses a Bnary tree to organize the data
+DROP TABLE IF EXISTS test;
+CREATE TABLE test (
+    id INTEGER,
+    name VARCHAR(255),
+    address VARCHAR(255),
+    city VARCHAR(255),
+    state CHAR(2),
+    zip CHAR(10),
+	INDEX (a)    --can use multiple indexes using INDEX(a,b)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+SHOW INDEXES FROM test;
+
+mySQL uses a Bnary tree to organize the data
+DROP TABLE IF EXISTS test;
+CREATE TABLE test (
+    id INTEGER,
+    name VARCHAR(255),
+    address VARCHAR(255),
+    city VARCHAR(255),
+    state CHAR(2),
+    zip CHAR(10),
+	INDEX ab (a)    --can name INDEX(a,b) as ab
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+SHOW INDEXES FROM test;
+DROP INDEX ab ON test;
+
+-Constraints
+CREATE TABLE test (
+    a INTEGER,
+    b VARCHAR(255)
+);
+INSERT INTO TEST ( b ) VALUES ( 'one' );  -- a column has NULL as no defaults
+
+CREATE TABLE test (
+    a INTEGER NOT NULL,
+    b VARCHAR(255)
+);
+INSERT INTO TEST ( b ) VALUES ( 'one' ); --sets the column to NOT NULL ans sets the default valur to 0.
+
+CREATE TABLE test (
+    a INTEGER,
+    b VARCHAR(255) UNIQUE  --setting the unique constraint on column b
+);
+INSERT INTO TEST ( b ) VALUES ( 'one' );
+
+CREATE TABLE test (
+    a INTEGER,
+    b VARCHAR(255) UNIQUE NOT NULL
+);
+INSERT INTO TEST ( b ) VALUES ( 'one' );
+
+-ID column in mySQL= NOT NULL and UNIQUE index constraints must be applied to it
+Hence we use PRIMARY KEY constraint and if we use AUTO_INCREMENT then we need not adding a value for ID using INSERT
+DROP TABLE IF EXISTS test;
+CREATE TABLE test (
+    id INTEGER AUTO_INCREMENT PRIMARY KEY, 
+    a VARCHAR(255),
+    b VARCHAR(255)
+);
+DESCRIBE test;
+SHOW TABLE STATUS like 'test';
+SHOW CREATE TABLE test;
+SHOW INDEXES FROM test;
+
+We can also just mention SERIAL = INTEGER AUTO_INCREMENT PRIMARY KEY
+CREATE TABLE test (
+    id SERIAL, --default is big INT unsigned otherwise use INTEGER AUTO_INCREMENT PRIMARY KEY
+    a VARCHAR(255),
+    b VARCHAR(255)
+);
+
+We can find the last inserted ID using a mySQL function
+SELECT LAST_INSERT_ID();
+
+
+-Foriegn Key Constraint
+CREATE TABLE client (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  name TEXT
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+CREATE TABLE book (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  title TEXT
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+CREATE TABLE lend (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  stamp TIMESTAMP, 
+  c_id INT,
+  b_id INT,
+  FOREIGN KEY (c_id) REFERENCES client(id),
+  FOREIGN KEY (b_id) REFERENCES book(id)
+);
+
+-ALTER TABLE STATEMENT
+CREATE TABLE test ( a VARCHAR(10), b VARCHAR(10), c VARCHAR(10) );
+INSERT INTO test VALUES ( 'one', 'two', 'three');
+INSERT INTO test VALUES ( 'two', 'three', 'four');
+INSERT INTO test VALUES ( 'three', 'four', 'five');
+SELECT * FROM test;
+
+ALTER TABLE test ADD d INT;  --adding new column d
+ALTER TABLE test DROP d;
+ALTER TABLE test DROP b;
+ALTER TABLE test ADD bb VARCHAR(10) AFTER a; --adding new column 'bb' affter column a
+ALTER TABLE test ADD aa INT FIRST;
+ALTER TABLE test ADD d VARCHAR(10) DEFAULT 'panda';  --give default values to column d
+ALTER TABLE test ADD id SERIAL FIRST; -- add the new column as the first column
+SHOW CREATE TABLE test;
+
+
+DATA TYPES - 65,535 bytes is max a row can contain
+---------------------------------------------------------------------------------------------------
+-INT and DECIMAL gaurantees prescision
+
+INT/INTEGER
+DECIMAL(p,s)/NUMERICE(p,s)  --p number of digits and s where the decimal point lies from the left
+DECIMAL = DECIMAL(10,0)
+REAL=FLOAT
+DOUBLE
+
+-STRING
+CHARACTER STRINGS
+CHAR(5) --length is always 5. padding is with space which is removed
+VARCHAR(25) --upto 25 characters + 1 bytes
+
+BINARY STRINGS -stores in 0's and 1's
+BINARY(length)
+VARBINARY(length) - just like VARCHAR
+
+FIXED LENGTH
+VARIABLE LENGTH
+LARGE OBJECT STORAGE -- to store documents and media file
+
+-DATE and TIME (stored in standard SQL format)
+CREATE TABLE test (
+  id SERIAL,
+  stamp TIMESTAMP,  --adds CURRENT_TIMESTAMP by default
+  note VARCHAR(255)
+);
+
+SET time_zone='US/EASTERN'
+
+-UPDATE command
+UPDATE test SET note = 'Jackson Pollock' WHERE id = 2;
+
+-BIT (mySQL saves space. packs all the bits for each colun together)
+DROP TABLE IF EXISTS test;
+CREATE TABLE test ( id SERIAL, a BIT(3), b BIT(5) );
+
+-BOOLEAN (maps to TINY INT) (BOOL is a alias for BOOLEAN)
+CREATE TABLE test ( a BOOLEAN, b BOOLEAN );
+INSERT INTO test VALUES ( TRUE, FALSE );
+
+-ENUM (ENUM column stores the index of the values specified in the list)
+DROP TABLE IF EXISTS test;
+CREATE TABLE test (
+  id SERIAL,
+  a ENUM( 'Pablo', 'Henri', 'Jackson' )
+);
+
+-- SET
+DROP TABLE IF EXISTS test;
+CREATE TABLE test (
+  id SERIAL,
+  a SET( 'Pablo', 'Henri', 'Jackson' )
+);
+
+
+String Functions -- Using WORLD MAP DB
+----------------------------------------------------------------------------------------------------
+-LENGTH function (but accented letters are taken as 2 characters. to count these characters as 1 use CHAR_LENGTH)
+SELECT Name, LocalName, LENGTH(LocalName) AS len FROM Country WHERE Continent = 'Europe' ORDER BY len DESC; 
+
+SELECT Name, LocalName, CHAR_LENGTH(LocalName) AS len FROM Country WHERE Continent = 'Europe' ORDER BY len DESC; 
+
+-Selecting different section of the string using LEFT(number of characters from left) , RIGHT(number of characters from right) and MID(STARTING, number of characters to select)
+SELECT Name, LEFT(Name, 3), RIGHT(Name, 3), MID(Name, 2, 3) FROM Country WHERE Continent = 'Europe';
+
+-CONCAT function 
+SELECT CONCAT(Name, LocalName ) FROM Country WHERE Continent = 'Europe'; --gives 1 column with 2 actual columns jamned together
+SELECT CONCAT(Name, 'mytext', LocalName ) FROM Country WHERE Continent = 'Europe'; --concatonate with a literal
+
+SELECT CONCAT_WS(', ', Name, LocalName, Region, Continent ) FROM Country WHERE Continent = 'Europe'; -- concatonate with a delimitter , between each string
+
+-Locate Function (gives the position of the start of the string or character we are looking for)
+SELECT LOCATE('bar', 'foobarbaz'); --gives 4
+SELECT Name, LOCATE('stan', Name) FROM Country WHERE Name LIKE '%stan%';
+SELECT Name, LOCATE('k', Name) FROM Country WHERE Name LIKE '%k%';
+
+-CASE fuctions - to change to upper or lower case
+SELECT Name, UPPER(Name), LocalName, UPPER(LocalName) FROM Country WHERE Continent = 'Europe';
+SELECT Name, LOWER(Name), LocalName, LOWER(LocalName) FROM Country WHERE Continent = 'Europe';
+
+-REVERSE function - to reverse a string
+SELECT Name, REVERSE(Name), LocalName, REVERSE(LocalName) FROM Country WHERE Continent = 'Europe';
+
+
+Numeric Functions -- Using WORLD MAP DB
+----------------------------------------------------------------------------------------------------
+
+SELECT 7 + 3;
+SELECT 7 - 3;
+SELECT 7 * 3;
+SELECT 7 / 3;  -- gives in decimal 
+SELECT 7 DIV 3; -- use DIV for interger output
+SELECT 7 MOD 3;
+SELECT 7 % 3;
+
+SELECT POWER(7, 3), 7 * 7 * 7;
+SELECT POW(7, 3), 7 * 7 * 7; 
+
+SELECT ABS(7); --absolute value 7
+SELECT ABS(-7);  --absolute value 7
+SELECT SIGN(7); --gives 1 if positive
+SELECT SIGN(-7); --gives 01 if negative
+
+CONV(number, base base, convert to base)
+SELECT CONV(57, 10, 16); --base convertion
+
+SELECT PI();
+SELECT ROUND(PI()); --rounding to earest whole number
+SELECT ROUND(PI(), 2); --rounding to the 2 decimal point
+
+SELECT TRUNCATE(PI(), 3); --instead of rounding you can truncate to 3 decimal points
+SELECT CEIL(PI());  --rounding up to whole integer
+SELECT FLOOR(PI()); -- rounding down to an integer
+
+SELECT Name, RAND() FROM Country LIMIT 5; --LIMIT=5 shows only 5 rows
+SELECT Name, RAND(7) FROM Country LIMIT 5; --use a seed to generate random number . then the random numberS generated with that seed remains the same
+
+
+Date and Time Functions -- Using WORLD MAP DB
+----------------------------------------------------------------------------------------------------
+SHOW VARIABLES LIKE '%time_zone%';
+
+-CURRENT TIMESTAMP
+SELECT NOW(); --current timestamp
+SELECT CURRENT_TIMESTAMP();
+UNIX_TIMESTAMP();
+
+SELECT DAYNAME(NOW());
+SELECT DAYOFTHEWEEK(NOW());
+SELECT DAYOFTHEMONTH(NOW());
+SELECT DAYOFTHEYEAR(NOW());
+SELECT MONTHNAME(NOW());
+
+-conver from seconds to time 
+SELECT TIME_TO_SEC('00:30:00');
+SELECT SEC_TO_TIME(1800); --converts 1800 secs to mins
+
+-ADD and SUBTRACT time
+SELECT ADDTIME('1:00:00','00:30:00'); --adds 30mins to 1 hour
+SELECT SUBTIME('1:00:00','00:30:00'); --subtract 30mins from 1 hour
+
+-ADD and SUBTRACT dates (use INTERVAL to specify number of days)
+SELECT ADDDATE('2018-06-26', INTERVAL 2 DAY); --adds 2 days to mentioned date
+SELECT SUBDATE('2018-06-26', INTERVAL 20 DAY); --subtracts 20 days from mentioned date
+
+NOTE: INTERVAL are available for hour, minute, second, day, week, month year and quarter
+
+
+TIME ZONES -- Using WORLD MAP DB
+----------------------------------------------------------------------------------------------------
+SET time_zone = 'US/Eastern';
+SHOW VARIABLES LIKE '%time_zone%';  -- shows time zone variable on the system
+SELECT NOW();
+
+-formatting dates
+SELECT DATE_FORMAT(NOW(), '%W, %D of %M, %Y');
+SELECT DATE_FORMAT(NOW(), '%Y-%m-%d %T'); --'T' stands for time format 24 hour
+
+
+Aggregate functions -- operated on a set of rows instead of row by row -- Using WORLD MAP DB
+----------------------------------------------------------------------------------------------------
+-COUNT function
+SELECT COUNT(*) FROM Country;                         --counts all the rows
+SELECT COUNT(Population) FROM Country;               -- counts all the rows that are NOT NULL
+
+-GROUP BY CLAUSE
+SELECT Continent, COUNT(*) AS Count FROM Country GROUP BY Continent ORDER BY Count DESC;  --gives 1 row in each continent with count= number of rows in continents
+SELECT COUNT(DISTINCT Continent) FROM Country ; -- gives 7 continents  
+
+-GROUP_CONCAT function
+SELECT GROUP_CONCAT(Name) FROM Country WHERE Region = 'Western Europe';  -- puts all the rows of names returned into a single row seperated by ','
+SELECT GROUP_CONCAT(Name) FROM Country GROUP BY Region;
+SELECT GROUP_CONCAT(DISTINCT Continent ORDER BY Continent SEPARATOR '/') FROM Country;  --seperator can be changed as shown here
+
+SELECT AVG(Population) FROM Country WHERE Region = 'Western Europe';
+SELECT MIN(Population), MAX(Population) FROM Country WHERE Region = 'Western Europe';
+SELECT SUM(Population), STD(Population) FROM Country WHERE Region = 'Western Europe';
+
+
+CASE - flow control
+----------------------------------------------------------------------------------------------------
+
+DROP TABLE IF EXISTS booltest;
+CREATE TABLE booltest (a INTEGER, b INTEGER);
+INSERT INTO booltest VALUES (1, 0);
+SELECT * FROM booltest;
+
+-2 ways to write the case statements
+SELECT
+    CASE WHEN a THEN 'true' ELSE 'false' END as boolA,
+    CASE WHEN b THEN 'true' ELSE 'false' END as boolB
+    FROM booltest
+;
+
+SELECT
+  CASE a WHEN 1 THEN 'true' ELSE 'false' END AS boolA,
+  CASE b WHEN 1 THEN 'true' ELSE 'false' END AS boolB 
+  FROM booltest
+;
+
+DROP TABLE IF EXISTS booltest;
+
+
+MAINTAINING DATABASE integrity with transactions - using SCRATCH DATABASE
+----------------------------------------------------------------------------------------------------
+-FIRST part
+CREATE TABLE widgetInventory (
+  id SERIAL,
+  description VARCHAR(255),
+  onhand INTEGER NOT NULL
+);
+
+CREATE TABLE widgetSales (
+  id SERIAL,
+  inv_id INTEGER,
+  quan INTEGER,
+  price INTEGER
+);
+
+INSERT INTO widgetInventory ( description, onhand ) VALUES ( 'rock', 25 );
+INSERT INTO widgetInventory ( description, onhand ) VALUES ( 'paper', 25 );
+INSERT INTO widgetInventory ( description, onhand ) VALUES ( 'scissors', 25 );
+
+SELECT * FROM widgetInventory;
+
+-SECOND part   --only if all the statement execute statements successfully 	will it comit these changes to the DB
+START TRANSACTION;
+INSERT INTO widgetSales ( inv_id, quan, price ) VALUES ( 1, 5, 500 );
+UPDATE widgetInventory SET onhand = ( onhand - 5 ) WHERE id = 1;
+COMMIT;
+
+
+SELECT * FROM widgetInventory;
+SELECT * FROM widgetSales;
+
+START TRANSACTION;
+INSERT INTO widgetInventory ( description, onhand ) VALUES ( 'toy', 25 );
+ROLLBACK;
+SELECT * FROM widgetInventory;
+SELECT * FROM widgetSales;
+
+-- restore database
+DROP TABLE IF EXISTS widgetInventory;
+DROP TABLE IF EXISTS widgetSales;
+
+-- 02 Database performance
+-- database: scratch
+
+CREATE TABLE test ( id SERIAL, data VARCHAR(256) );
+
+-- copy / paste 1,000 of these ...
+INSERT INTO test ( data ) VALUES ( 'this is a good sized line of text.' );
+
+-- count the rows in the table
+SELECT COUNT(*) FROM test;
+
+-- put this before the 1,000 INSERT statements
+START TRANSACTION;
+
+-- put this after the 1,000 INSERT statements
+COMMIT;
+
+-- restore database
+DROP TABLE test;
+
+
+
+
+
+
+
+
+
+
