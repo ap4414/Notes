@@ -1,0 +1,66 @@
+add on binaries- docker-machine, docker compose
+
+image
+docker image ls
+docker pull alpine
+
+docker container logs webhost
+
+create/delete
+docker container run --publish 80:80 --detach --name webhost nginx
+docker container run -it --name webhost bash
+docker container run -d --name webhost --network my_app_network nginx
+docker container ls -a
+docker container rm webhost
+docker container rm -f webhost
+docker container top webhost
+
+ps aux
+start/stop
+docker container stop webhost
+docker stop webhost
+docker container start webhost
+docker start webhost
+docker container start -ai webhost
+
+running
+docker container exec -it webhost bash
+
+testing
+docker info 
+curl localhost:80
+curl localhost:8080
+docker container stats
+docker container inspect webhost
+docker container port webhost
+docker container inspect --format '{{ .NetworkSettings.IPAddress }}' webhost
+
+image
+docker login
+docker image ls
+docker image tag nginx ap4414/nginx
+docker image tag ap4414/nginx ap4414/nginx:testing
+docker image push ap4414/nginx:testing
+
+network
+docker network ls
+docker network inspect
+docker network create my_app_net
+docker network connect my_app_net webhost
+docker network disconnect my_app_net webhost
+
+swarm
+docker swarm init
+docker service create alpine ping 8.8.8.8
+docker service ls
+docker service ps laughing_minsky
+docker service update rd1jf4oeovtq --replicas 3
+docker service rm laughing_minsky
+
+
+assignment CLI
+docker container run -rm -it centos:7 bash
+docker container run -d --net dude --net-alias elastisearch:2
+docker container run -d --net dude --net-alias elastisearch:2
+docker container run --rm --net dude alpine nslookup search
+docker container run --rm --net dude centos curl -s search:9200
