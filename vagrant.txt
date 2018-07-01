@@ -1,0 +1,38 @@
+https://app.vagrantup.com/boxes/search
+
+to use system ssh and not "vagrant ssh"
+--------------------------------------------
+copied over vagrant_private_key specified in "vagrant.exe ssh-config" to linux side . then change permisson to 0700
+
+Use command to ssh into vagrant box:
+ssh -vvv vagrant@127.0.0.1 -p 2222  -i /home/hellfire/vagrant_key/private_key -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -o PasswordAuthentication=no -o IdentitiesOnly=yes
+
+command
+----------------------
+vangrant init bento/ubuntu
+vagrant provision
+vagrant suspend
+vagrant resume
+vagrant halt --force
+vagrant up
+vagrant reload
+vagrant destroy  (factory reset)
+	
+
+VAGRANT IMP resources:
+---------------------------------------------
+C:\Users\Amith\.vagrant.d
+C:\Users\Amith\AppData\Local\Packages
+
+Change Insecure Key To My Own Key On Vagrant:
+http://ermaker.github.io/blog/2015/11/18/change-insecure-key-to-my-own-key-on-vagrant.html
+
+WSL system files:
+C:\Users\*username*\AppData\Local\Packages\CanonicalGroupLimited.Ubuntu18.04onWindows_79rhkp1fndgsc\LocalState\rootfs\home\hellfire\.ssh
+https://www.hashbangcode.com/article/connecting-vagrant-box-without-vagrant-ssh-command
+
+# Point end-of-life Ubuntu versions' apt source URLs to old-releases.*
+# See: https://help.ubuntu.com/community/EOLUpgrades
+sudo sed -i s/us.archive.ubuntu/old-releases.ubuntu/g /etc/apt/sources.list
+sudo sed -i s/security.ubuntu/old-releases.ubuntu/g /etc/apt/sources.list
+sudo apt-get update
