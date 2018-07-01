@@ -496,23 +496,19 @@ START TRANSACTION;
 INSERT INTO widgetSales ( inv_id, quan, price ) VALUES ( 1, 5, 500 );
 UPDATE widgetInventory SET onhand = ( onhand - 5 ) WHERE id = 1;
 COMMIT;
-
-
 SELECT * FROM widgetInventory;
 SELECT * FROM widgetSales;
 
+-THIRD part   --here we can ROLLBACK to the previous state before we started executing the statements
 START TRANSACTION;
 INSERT INTO widgetInventory ( description, onhand ) VALUES ( 'toy', 25 );
 ROLLBACK;
 SELECT * FROM widgetInventory;
 SELECT * FROM widgetSales;
 
--- restore database
-DROP TABLE IF EXISTS widgetInventory;
-DROP TABLE IF EXISTS widgetSales;
 
--- 02 Database performance
--- database: scratch
+Database performance integrity with transactions - using SCRATCH DATABASE
+----------------------------------------------------------------------------------------------------
 
 CREATE TABLE test ( id SERIAL, data VARCHAR(256) );
 
